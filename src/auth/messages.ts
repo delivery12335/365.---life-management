@@ -1,5 +1,7 @@
 import { useLanguage } from '../i18n';
 const en = {
+  confirmation_required:
+    'Check your email to confirm the account, then sign in. If email delivery is not configured, the project owner needs to adjust Supabase Auth settings.',
   staticPreview:
     'Presentation version. Sign-in and registration require the 365. server. No account data is collected here.',
   sourceCode: 'Run the full version →',
@@ -66,6 +68,8 @@ const en = {
 } as const;
 type Messages = { [K in keyof typeof en]: string };
 const ru: Messages = {
+  confirmation_required:
+    'Подтвердите аккаунт по письму, затем войдите. Если отправка писем не настроена, владелец проекта должен изменить настройки Supabase Auth.',
   staticPreview:
     'Презентационная версия. Вход и регистрация требуют сервера 365. Данные аккаунта здесь не собираются.',
   sourceCode: 'Запустить полную версию →',

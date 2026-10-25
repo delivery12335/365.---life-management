@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { api } from './api';
-import { staticPreview } from '../config';
+import { cloudEnabled, staticPreview } from '../config';
 export interface AuthUser {
   id: string;
   email: string;
@@ -46,6 +46,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     void refresh();
+    let disposed = false;
+    let unsubscribe: (() => void) | undefined;
+    if (cloudEnabled)
+      void import('./cloud').then(({ cloud, cloudUser }) => {
+        if (disposed) return;
+        const { data } = cloud.auth.onAuthStateChange((_event, session) => {
+          setUser(session ? cloudUser(session.user) : null);
+          setLoading(false);
+          setError(false);
+        });
+        unsubscribe = () => data.subscription.unsubscribe();
+      });
     const expired = () => setUser(null);
     window.addEventListener('365:session-expired', expired);
     if ('BroadcastChannel' in window) {
@@ -59,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener('visibilitychange', visible);
     return () => {
+      disposed = true;
+      unsubscribe?.();
       window.removeEventListener('365:session-expired', expired);
       document.removeEventListener('visibilitychange', visible);
       channel.current?.close();

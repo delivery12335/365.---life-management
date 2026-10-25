@@ -1,15 +1,14 @@
-export class ApiError extends Error {
-  constructor(
-    public code: string,
-    public status = 0,
-  ) {
-    super(code);
-  }
-}
+import { ApiError } from './errors';
+import { cloudEnabled } from '../config';
+export { ApiError } from './errors';
 export async function api<T>(
   path: string,
   options: { method?: string; body?: unknown; accountId?: string; signal?: AbortSignal } = {},
 ): Promise<T> {
+  if (cloudEnabled) {
+    const { cloudApi } = await import('./cloud');
+    return cloudApi(path, options) as Promise<T>;
+  }
   let response: Response;
   try {
     response = await fetch(path, {
