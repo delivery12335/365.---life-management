@@ -3,7 +3,7 @@
 GitHub Pages раздаёт интерфейс, Supabase Free — аккаунты и PostgreSQL. Node.js-сервер для этой конфигурации не нужен. Локальный режим SQLite остаётся доступен без переменных Supabase.
 
 1. Создайте проект в организации **Free** на https://supabase.com/dashboard. Пароль базы храните у себя.
-2. В **SQL Editor** выполните [supabase/schema.sql](../supabase/schema.sql). Скрипт создаёт таблицу с RLS и две функции. Новые аккаунты получают только пустые коллекции; чужие записи недоступны. Запись выполняется функцией с проверкой владельца и версии данных.
+2. В **SQL Editor** выполните [backend/supabase/schema.sql](../backend/supabase/schema.sql). Скрипт создаёт таблицу с RLS и две функции. Новые аккаунты получают только пустые коллекции; чужие записи недоступны. Запись выполняется функцией с проверкой владельца и версии данных.
 3. В **Authentication → URL Configuration** задайте Site URL и Redirect URL: `https://delivery12335.github.io/365.---life-management/`.
 4. В **Authentication → Providers / Sign In → Email** выберите настройку подтверждения email. Для входа сразу после регистрации без почтового сервиса отключите Confirm email. Это означает, что владение email не проверяется. Если подтверждение включено, настройте собственный SMTP: стандартная почта Supabase ограничена адресами команды проекта.
 5. В **Project Settings → API Keys** скопируйте **publishable key**, а в Data API — **Project URL**. Не используйте secret key, service_role или пароль базы.
