@@ -1,6 +1,6 @@
 import { EmptyState } from './EmptyState';
 import { ArrowUpRight, Check, Droplets, Footprints, Moon, Timer } from 'lucide-react';
-import type { PageProps } from '../pages/Overview';
+import type { PageProps } from '../types/page';
 import type { LifeEditor, CalendarEvent } from '../types/life';
 import { useLifeLanguage } from '../lifeI18n';
 import { financeSummary, percent, wellnessFor } from '../utils/life';

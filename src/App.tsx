@@ -26,14 +26,14 @@ import { LanguageProvider } from './i18n';
 import { useLifeLanguage } from './lifeI18n';
 import type { Editor, Page } from './types';
 import type { LifeEditor, Note } from './types/life';
-import LifeToday from './pages/LifeToday';
+import Today from './pages/Today';
 import Calendar from './pages/Calendar';
-import LifeTasks from './pages/LifeTasks';
+import Tasks from './pages/Tasks';
 import Habits from './pages/Habits';
 import Health from './pages/Health';
 import Finance from './pages/Finance';
 import Notes from './pages/Notes';
-import LifeSettings from './pages/LifeSettings';
+import Settings from './pages/Settings';
 import Goals from './pages/Goals';
 const pages: Page[] = [
   'Calendar',
@@ -327,9 +327,9 @@ function Tracker() {
             </p>
           )}
           <div className={`page-content page-${page.toLowerCase()}`} key={page}>
-            {page === 'Overview' && <LifeToday {...props} inlineRequest={inlineRequest} />}
+            {page === 'Overview' && <Today {...props} inlineRequest={inlineRequest} />}
             {page === 'Calendar' && <Calendar {...props} confirmDelete={confirmDelete} />}
-            {page === 'Tasks' && <LifeTasks {...props} />}
+            {page === 'Tasks' && <Tasks {...props} />}
             {page === 'Habits' && <Habits {...props} />}
             {page === 'Health' && <Health {...props} confirmDelete={confirmDelete} />}
             {page === 'Finance' && <Finance {...props} confirmDelete={confirmDelete} />}
@@ -342,7 +342,7 @@ function Tracker() {
               />
             )}
             {page === 'Settings' && (
-              <LifeSettings
+              <Settings
                 {...props}
                 theme={theme}
                 setTheme={setTheme}

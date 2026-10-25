@@ -1,87 +1,78 @@
+import { EmptyState } from '../components/EmptyState';
 import { useState } from 'react';
-import { Search, SlidersHorizontal, Plus } from 'lucide-react';
-import type { PageProps } from './Overview';
-import { TaskItem, Empty } from '../components/UI';
+import { Plus, Search } from 'lucide-react';
+import type { PageProps } from '../types/page';
 import { filterTasks } from '../utils/statistics';
+import { SimpleTask } from '../components/TrackerUI';
+import { useLifeLanguage } from '../lifeI18n';
 export default function Tasks({ data, today, edit, toggleTask, remove }: PageProps) {
-  const [filter, setFilter] = useState('All');
+  const { t, l } = useLifeLanguage();
+  const [filter, setFilter] = useState('Today');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('date');
   const tasks = filterTasks(data.tasks, filter, query, sort, today);
+  if (!data.tasks.length)
+    return (
+      <section className="life-card">
+        <EmptyState
+          title={l.noTasksYet}
+          action={t.addTask}
+          icon={Plus}
+          onAction={() => edit({ kind: 'task' })}
+        />
+      </section>
+    );
   return (
-    <>
-      <div className="page-intro">
-        <div>
-          <span className="eyebrow">A CLEAR MIND STARTS HERE</span>
-          <h2>One thing at a time.</h2>
-          <p>Turn your intentions into action.</p>
+    <section className="life-card task-manager">
+      <div className="task-manager-toolbar">
+        <div className="segmented">
+          {[
+            { key: 'Today', label: t.today },
+            { key: 'Upcoming', label: t.upcoming },
+            { key: 'All', label: t.all },
+            { key: 'Completed', label: t.finished },
+          ].map((item) => (
+            <button
+              className={filter === item.key ? 'selected' : ''}
+              key={item.key}
+              onClick={() => setFilter(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
         <button className="button primary" onClick={() => edit({ kind: 'task' })}>
           <Plus size={16} />
-          New task
+          {t.addTask}
         </button>
       </div>
-      <section className="panel task-manager">
-        <div className="task-toolbar">
-          <div className="tabs">
-            {['All', 'Today', 'Upcoming', 'Completed'].map((f) => (
-              <button
-                key={f}
-                className={filter === f ? 'selected' : ''}
-                onClick={() => setFilter(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-          <div className="task-controls">
-            <label className="search">
-              <Search size={15} />
-              <input
-                aria-label="Search tasks"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tasks…"
-              />
-            </label>
-            <label className="sort">
-              <SlidersHorizontal size={15} />
-              <select
-                aria-label="Sort tasks"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                <option value="date">Due date</option>
-                <option value="priority">Priority</option>
-                <option value="category">Category</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div className="list-heading">
-          <span>
-            {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
-          </span>
-          <span>Organize your day, your way</span>
-        </div>
-        {tasks.length ? (
-          tasks.map((t) => (
-            <TaskItem
-              key={t.id}
-              task={t}
-              onToggle={() => toggleTask(t.id)}
-              onEdit={() => edit({ kind: 'task', item: t })}
-              onDelete={() => remove('tasks', t.id)}
-            />
-          ))
-        ) : (
-          <Empty
-            title="No tasks found"
-            text="Try another filter, or start with one small task."
-            onCreate={() => edit({ kind: 'task' })}
+      <div className="task-tools">
+        <label className="task-search">
+          <Search size={16} />
+          <input
+            aria-label={t.search}
+            placeholder={t.search}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
-        )}
-      </section>
-    </>
+        </label>
+        <select aria-label={t.sort} value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="date">{t.sortDate}</option>
+          <option value="priority">{t.sortPriority}</option>
+          <option value="category">{t.sortCategory}</option>
+        </select>
+      </div>
+      {tasks.map((task) => (
+        <SimpleTask
+          key={task.id}
+          task={task}
+          showDate={filter !== 'Today'}
+          toggle={() => toggleTask(task.id)}
+          edit={() => edit({ kind: 'task', item: task })}
+          remove={() => remove('tasks', task.id)}
+        />
+      ))}
+      {!tasks.length && <p className="list-empty">{t.noMatches}</p>}
+    </section>
   );
 }

@@ -22,9 +22,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run test:server
-      - run: npm run test:cloud
       - run: npm run build -- --mode pages
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

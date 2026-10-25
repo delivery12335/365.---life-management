@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import type { PageProps } from './Overview';
+import type { PageProps } from '../types/page';
 import { useLanguage } from '../i18n';
 import { SimpleGoal } from '../components/TrackerUI';
 export default function Goals({ data, edit, remove }: PageProps) {

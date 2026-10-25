@@ -1,44 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, Plus, Search } from 'lucide-react';
-import type { PageProps } from './Overview';
-import { dailyProgress, filterTasks, isScheduled } from '../utils/statistics';
-import { useLanguage } from '../i18n';
+import { ArrowUpRight, CheckCheck, Footprints, Plus, Repeat2 } from 'lucide-react';
+import {
+  CardTitle,
+  FinancePreview,
+  HealthPreview,
+  HabitCheck,
+  Schedule,
+  type LifePageProps,
+} from '../components/LifeUI';
+import { ProgressRing } from '../components/ProgressRing';
 import { SimpleTask } from '../components/TrackerUI';
+import { dailyProgress, isScheduled, streaks } from '../utils/statistics';
+import { wellnessFor } from '../utils/life';
+import { useLifeLanguage } from '../lifeI18n';
 export default function Today({
   data,
   today,
+  edit,
   update,
   toggleTask,
   toggleHabit,
-  edit,
   remove,
   navigate,
+  openLife,
+  openNote,
   inlineRequest = 0,
-}: PageProps & { inlineRequest?: number }) {
-  const { t } = useLanguage();
+}: LifePageProps & { inlineRequest?: number }) {
+  const { t, l, number, days, locale } = useLifeLanguage();
+  const progress = dailyProgress(data, today);
+  const tasks = data.tasks.filter((t) => t.dueDate === today);
+  const habits = data.habits.filter((h) => isScheduled(h, today));
+  const wellness = wellnessFor(data, today);
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
-  const [showAll, setShowAll] = useState(false);
-  const [filter, setFilter] = useState('All');
-  const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('date');
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (inlineRequest) {
-      setAdding(true);
-      setShowAll(false);
-    }
+    if (inlineRequest) setAdding(true);
   }, [inlineRequest]);
   useEffect(() => {
     if (adding) input.current?.focus();
   }, [adding, inlineRequest]);
-  const progress = dailyProgress(data, today);
-  const tasks = showAll
-    ? filterTasks(data.tasks, filter, query, sort, today)
-    : data.tasks.filter((task) => task.dueDate === today);
-  const habits = data.habits.filter((habit) => isScheduled(habit, today));
-  function addTask(event: React.FormEvent) {
-    event.preventDefault();
+  function create(e: React.FormEvent) {
+    e.preventDefault();
     if (!title.trim()) return;
     update((d) => ({
       ...d,
@@ -61,150 +64,183 @@ export default function Today({
   }
   return (
     <>
-      <section className="today-progress" aria-labelledby="progress-title">
-        <div>
-          <h2 id="progress-title">{t.progress}</h2>
-          <span>
-            {progress.done} {t.of} {progress.total} {t.completed}
-          </span>
+      <section className="life-card daily-summary">
+        <div className="daily-ring-composition">
+          <ProgressRing value={progress.percent} size={172} stroke={12} label={t.progress}>
+            <strong className="daily-percent">
+              {progress.percent}
+              <small>%</small>
+            </strong>
+            <span>{l.yourDay}</span>
+          </ProgressRing>
+          <div className="summary-copy">
+            <span className="summary-eyebrow">{l.yourDay}</span>
+            <h2>
+              {progress.total ? (
+                <>
+                  {progress.done} {t.of} {progress.total} {t.completed}
+                </>
+              ) : (
+                t.noTasksHint
+              )}
+            </h2>
+            <p>{t.progress}</p>
+          </div>
         </div>
-        <div
-          className="simple-progress"
-          role="progressbar"
-          aria-labelledby="progress-title"
-          aria-valuenow={progress.percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <span style={{ width: `${progress.percent}%` }} />
+        <div className="daily-indicators">
+          <div>
+            <span className="indicator-icon blue">
+              <CheckCheck size={18} />
+            </span>
+            <span>
+              {l.tasks}
+              <strong>
+                {tasks.filter((t) => t.completed).length}
+                <small> / {tasks.length}</small>
+              </strong>
+            </span>
+          </div>
+          <div>
+            <span className="indicator-icon purple">
+              <Repeat2 size={18} />
+            </span>
+            <span>
+              {t.habits}
+              <strong>
+                {habits.filter((h) => h.history.includes(today)).length}
+                <small> / {habits.length}</small>
+              </strong>
+            </span>
+          </div>
+          <div>
+            <span className="indicator-icon green">
+              <Footprints size={18} />
+            </span>
+            <span>
+              {l.activity}
+              <strong>
+                {wellness ? number(wellness.steps) : '—'}
+                {wellness && <small> {l.steps}</small>}
+              </strong>
+            </span>
+          </div>
         </div>
       </section>
-      <section className="today-tasks" aria-labelledby="tasks-title">
-        <div className="simple-section-title">
-          <h2 id="tasks-title">{showAll ? t.allTasks : t.today}</h2>
-          <button className="quiet-button" onClick={() => setShowAll((value) => !value)}>
-            {showAll ? t.onlyToday : t.allTasks}
-          </button>
-        </div>
-        {showAll && (
-          <div className="task-tools">
-            <label className="task-search">
-              <Search size={16} />
-              <input
-                aria-label={t.search}
-                placeholder={t.search}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-            <select
-              aria-label={t.allTasks}
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="All">{t.all}</option>
-              <option value="Today">{t.today}</option>
-              <option value="Upcoming">{t.upcoming}</option>
-              <option value="Completed">{t.finished}</option>
-            </select>
-            <select aria-label={t.sort} value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="date">{t.sortDate}</option>
-              <option value="priority">{t.sortPriority}</option>
-              <option value="category">{t.sortCategory}</option>
-            </select>
-          </div>
-        )}
-        <div className="simple-task-list">
+      <div className="today-primary-grid">
+        <section className="life-card daily-tasks">
+          <CardTitle title={t.today} action={t.allTasks} onAction={() => navigate('Tasks')} />
           {tasks.map((task) => (
             <SimpleTask
               key={task.id}
               task={task}
-              showDate={showAll}
               toggle={() => toggleTask(task.id)}
               edit={() => edit({ kind: 'task', item: task })}
               remove={() => remove('tasks', task.id)}
             />
           ))}
-          {!tasks.length && (
-            <div className="list-empty">
-              <p>{showAll ? t.noMatches : t.noTasks}</p>
-              {!showAll && <span>{t.noTasksHint}</span>}
-            </div>
-          )}
-        </div>
-        {adding ? (
-          <form className="inline-task-form" onSubmit={addTask}>
-            <div className="inline-input-row">
-              <span className="empty-circle" />
+          {!tasks.length && <p className="list-empty">{l.noTasksYet}</p>}
+          {adding ? (
+            <form className="inline-task-form" onSubmit={create}>
               <input
                 ref={input}
+                aria-label={t.title}
+                placeholder={t.taskPlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={t.taskPlaceholder}
-                aria-label={t.title}
                 maxLength={120}
                 required
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setAdding(false);
-                    setTitle('');
-                  }
+                  if (e.key === 'Escape') setAdding(false);
                 }}
               />
+              <div className="inline-form-actions">
+                <button type="button" className="button secondary" onClick={() => setAdding(false)}>
+                  {t.cancel}
+                </button>
+                <button className="button primary" disabled={!title.trim()}>
+                  {t.addTask}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button className="add-task-inline" onClick={() => setAdding(true)}>
+              <Plus size={17} />
+              {t.addTask}
+            </button>
+          )}
+        </section>
+        <section className="life-card daily-calendar">
+          <CardTitle
+            title={l.schedule}
+            action={l.viewCalendar}
+            onAction={() => navigate('Calendar')}
+          />
+          <Schedule events={(data.events ?? []).filter((e) => e.date === today)} open={openLife} />
+        </section>
+      </div>
+      <section className="life-card daily-habits">
+        <CardTitle title={t.habits} action={l.allHabits} onAction={() => navigate('Habits')} />
+        <div className="habit-preview-grid">
+          {habits.map((habit) => (
+            <div className="habit-preview-item" key={habit.id}>
+              <HabitCheck
+                done={habit.history.includes(today)}
+                toggle={() => toggleHabit(habit.id, today)}
+                label={`${habit.history.includes(today) ? t.uncomplete : t.complete}: ${habit.name}`}
+              />
+              <div>
+                <strong>{habit.name}</strong>
+                <span>{days(streaks(habit, today).current)}</span>
+              </div>
             </div>
-            <div className="inline-form-actions">
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => {
-                  setAdding(false);
-                  setTitle('');
-                }}
-              >
-                {t.cancel}
-              </button>
-              <button className="button primary" type="submit" disabled={!title.trim()}>
-                {t.addTask}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button className="add-task-inline" onClick={() => setAdding(true)}>
-            <Plus size={18} />
-            {t.addTask}
-          </button>
-        )}
-      </section>
-      <section className="today-habits" aria-labelledby="habits-title">
-        <div className="simple-section-title">
-          <h2 id="habits-title">{t.habits}</h2>
+          ))}
+          {!habits.length && (
+            <p className="muted small-text">{data.habits.length ? t.scheduled : t.noHabits}</p>
+          )}
+          {!habits.length && (
+            <button className="quiet-button" onClick={() => edit({ kind: 'habit' })}>
+              {t.newHabit}
+            </button>
+          )}
         </div>
-        {habits.map((habit) => {
-          const completed = habit.history.includes(today);
-          return (
-            <div className={`today-habit ${completed ? 'is-complete' : ''}`} key={habit.id}>
-              <span>{habit.name}</span>
+      </section>
+      <div className="today-secondary-grid">
+        <HealthPreview data={data} today={today} navigate={navigate} openLife={openLife} />
+        <FinancePreview data={data} today={today} navigate={navigate} openLife={openLife} />
+      </div>
+      <section className="notes-preview-section">
+        <CardTitle title={l.recentNotes} action={l.newNote} onAction={() => openNote()} />
+        <div className="note-preview-grid">
+          {[...(data.notes ?? [])]
+            .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+            .slice(0, 3)
+            .map((note) => (
               <button
-                className="check-control habit-control"
-                onClick={() => toggleHabit(habit.id, today)}
-                aria-label={`${completed ? t.uncomplete : t.complete}: ${habit.name}`}
-                aria-pressed={completed}
+                className="life-card note-preview"
+                key={note.id}
+                onClick={() => openNote(note.id)}
               >
-                <span>{completed && <Check size={15} />}</span>
+                <span className="note-preview-corner">
+                  <ArrowUpRight size={16} />
+                </span>
+                <h3>{note.title || l.untitled}</h3>
+                <p>{note.content.slice(0, 100) || l.noteEmpty}</p>
+                <small>
+                  {new Date(note.updatedAt).toLocaleDateString(locale, {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </small>
               </button>
-            </div>
-          );
-        })}
-        {!habits.length && (
-          <div className="list-empty">
-            <p>{data.habits.length ? t.scheduled : t.noHabits}</p>
-            {!data.habits.length && <span>{t.noHabitsHint}</span>}
-          </div>
-        )}
-        <button className="view-habits" onClick={() => navigate('Habits')}>
-          {t.viewHabits}
-          <ArrowRight size={16} />
-        </button>
+            ))}
+          {!data.notes?.length && <p className="muted">{l.noNotes}</p>}
+          {!data.notes?.length && (
+            <button className="button secondary" onClick={() => openNote()}>
+              <Plus size={16} />
+              {l.newNote}
+            </button>
+          )}
+        </div>
       </section>
     </>
   );

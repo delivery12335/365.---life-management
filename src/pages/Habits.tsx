@@ -1,7 +1,7 @@
 import { EmptyState } from '../components/EmptyState';
 import { useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Plus, Repeat2 } from 'lucide-react';
-import type { PageProps } from './Overview';
+import type { PageProps } from '../types/page';
 import { shiftDay, weekDays } from '../utils/dates';
 import { isScheduled, streaks } from '../utils/statistics';
 import { useLanguage } from '../i18n';
