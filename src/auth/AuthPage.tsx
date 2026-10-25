@@ -92,7 +92,8 @@ export function AuthPage() {
       }
     } catch (error) {
       const code = error instanceof ApiError ? error.code : 'server_error';
-      setError(code in text ? text[code as keyof typeof text] : text.server_error);
+      if (code === 'confirmation_required') setNotice(text.confirmation_required);
+      else setError(code in text ? text[code as keyof typeof text] : text.server_error);
     } finally {
       setBusy(false);
     }

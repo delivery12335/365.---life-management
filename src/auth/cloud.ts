@@ -37,6 +37,8 @@ function check(error: { code?: string; message?: string; status?: number } | nul
   if (!error) return;
   const code = error.code ?? '';
   const message = error.message ?? '';
+  if (/sending (confirmation|recovery) email/i.test(message))
+    throw new ApiError('email_delivery_unavailable');
   if (message.includes('data_conflict')) throw new ApiError('data_conflict', 409);
   if (message.includes('invalid_data')) throw new ApiError('invalid_data', 400);
   const mapped: Record<string, string> = {
@@ -46,7 +48,7 @@ function check(error: { code?: string; message?: string; status?: number } | nul
     weak_password: 'invalid_registration',
     over_request_rate_limit: 'too_many_attempts',
     over_email_send_rate_limit: 'too_many_attempts',
-    email_address_not_authorized: 'recovery_unavailable',
+    email_address_not_authorized: 'email_delivery_unavailable',
   };
   throw new ApiError(mapped[code] ?? 'server_error', error.status);
 }

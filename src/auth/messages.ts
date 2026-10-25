@@ -1,5 +1,7 @@
 import { useLanguage } from '../i18n';
 const en = {
+  email_delivery_unavailable:
+    'Email delivery is not configured for this address. The project owner needs to connect a mail provider in Supabase.',
   confirmation_required:
     'Check your email to confirm the account, then sign in. If email delivery is not configured, the project owner needs to adjust Supabase Auth settings.',
   staticPreview:
@@ -68,6 +70,8 @@ const en = {
 } as const;
 type Messages = { [K in keyof typeof en]: string };
 const ru: Messages = {
+  email_delivery_unavailable:
+    'Отправка писем на этот адрес пока не настроена. Владельцу проекта нужно подключить почтовый сервис в Supabase.',
   confirmation_required:
     'Подтвердите аккаунт по письму, затем войдите. Если отправка писем не настроена, владелец проекта должен изменить настройки Supabase Auth.',
   staticPreview:
